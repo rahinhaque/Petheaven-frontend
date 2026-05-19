@@ -394,8 +394,10 @@ const AdoptionProcess = () => {
   ];
 
   return (
-    <section ref={ref} className="relative py-28 px-6 bg-white overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(#E8D5C0 1px, transparent 1px)", backgroundSize: "32px 32px", opacity: 0.2 }} />
+    <section ref={ref} className="relative py-28 px-6 bg-[#FDF6EE] overflow-hidden">
+      {/* blob */}
+      <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, #F5923E18 0%, transparent 70%)" }} />
+      <div className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, #FDDBB430 0%, transparent 70%)" }} />
       <div className="max-w-7xl mx-auto relative">
         <div className={`text-center mb-20 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
           <SectionLabel>How It Works</SectionLabel>
@@ -419,7 +421,7 @@ const AdoptionProcess = () => {
                 transition: `all 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.15}s`
               }}
             >
-              <div className="w-24 h-24 rounded-full bg-white border-4 border-[#FDF6EE] shadow-xl flex items-center justify-center text-4xl mb-6 relative group-hover:-translate-y-2 transition-transform duration-300">
+              <div className="w-24 h-24 rounded-full bg-white border-4 border-[#E8D5C0] shadow-xl flex items-center justify-center text-4xl mb-6 relative group-hover:-translate-y-2 transition-transform duration-300">
                 <div className="absolute inset-0 rounded-full border border-[#E8742A]/20 scale-110 group-hover:scale-125 transition-transform duration-500 opacity-0 group-hover:opacity-100" />
                 {step.icon}
                 <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-[#E8742A] text-white flex items-center justify-center text-xs font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>
