@@ -1,0 +1,99 @@
+/* ─── Forms ─── */
+.paw-dashboard__form {
+  margin-top: 32px;
+  background: var(--paw-white);
+  border-radius: var(--paw-radius);
+  padding: 32px;
+  box-shadow: var(--paw-shadow);
+  border: 1.5px solid rgba(212, 165, 116, 0.2);
+}
+
+.paw-dashboard__form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.paw-dashboard__form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.paw-dashboard__form-group--full {
+  grid-column: 1 / -1;
+}
+
+.paw-dashboard__form-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--paw-brown-dark);
+}
+
+.paw-dashboard__form-input,
+.paw-dashboard__form-select,
+.paw-dashboard__form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--paw-brown-dark);
+  background: var(--paw-cream-dark);
+  border: 1.5px solid rgba(212, 165, 116, 0.4);
+  border-radius: var(--paw-radius-sm);
+  outline: none;
+  transition: all var(--paw-transition);
+}
+
+.paw-dashboard__form-input:focus,
+.paw-dashboard__form-select:focus,
+.paw-dashboard__form-textarea:focus {
+  border-color: var(--paw-orange);
+  box-shadow: 0 0 0 3px rgba(232, 116, 42, 0.15);
+  background: var(--paw-white);
+}
+
+.paw-dashboard__form-input[readonly] {
+  background: #f0f0f0;
+  cursor: not-allowed;
+  color: #777;
+  border-color: #ddd;
+}
+
+.paw-dashboard__form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.paw-dashboard__form-submit {
+  margin-top: 24px;
+  width: 100%;
+  padding: 14px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--paw-white);
+  background: linear-gradient(135deg, var(--paw-orange) 0%, var(--paw-orange-light) 100%);
+  border: none;
+  border-radius: var(--paw-radius-sm);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(232, 116, 42, 0.3);
+  transition: all var(--paw-transition);
+}
+
+.paw-dashboard__form-submit:hover {
+  box-shadow: 0 6px 22px rgba(232, 116, 42, 0.4);
+  transform: translateY(-2px);
+}
+
+.paw-dashboard__form-submit:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .paw-dashboard__form-grid {
+    grid-template-columns: 1fr;
+  }
+}

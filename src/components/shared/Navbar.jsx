@@ -10,8 +10,8 @@ import "./Navbar.css";
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "All Pets", href: "/all-pets" },
-  { name: "My Requests", href: "/my-requests" },
-  { name: "Add Pet", href: "/add-pet" },
+  { name: "My Requests", href: "/dashboard/requests" },
+  { name: "Add Pet", href: "/dashboard/add-pet" },
 ];
 
 /* ─── Framer Motion Variants ─── */
