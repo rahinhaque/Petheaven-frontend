@@ -1,0 +1,42 @@
+import { Geist, Geist_Mono } from "next/font/google";
+import { Outfit } from "next/font/google";
+import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+export const metadata = {
+  title: "Paw Heaven || Home",
+  description: "Adopt today, love forever — find your perfect furry companion at Paw Heaven.",
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">
+        <Navbar />
+        <div className="paw-navbar-spacer" />
+        {children}
+        <Footer />
+      </body>
+    </html>
+  );
+}

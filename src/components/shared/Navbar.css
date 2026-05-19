@@ -1,0 +1,532 @@
+/* ═══════════════════════════════════════════════════════════
+   Paw Heaven — Navbar Styles
+   Color palette derived from the logo:
+     Dark Brown  : #4A2C17
+     Mid Brown   : #6B3E26
+     Orange      : #E8742A
+     Light Orange: #F5923E
+     Cream       : #FFF8F0
+     Tan         : #D4A574
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── CSS Variables ─── */
+:root {
+  --paw-brown-dark: #4A2C17;
+  --paw-brown: #6B3E26;
+  --paw-brown-light: #8B5E3C;
+  --paw-orange: #E8742A;
+  --paw-orange-light: #F5923E;
+  --paw-cream: #FFF8F0;
+  --paw-cream-dark: #F5E6D3;
+  --paw-tan: #D4A574;
+  --paw-white: #FFFFFF;
+  --paw-shadow: 0 4px 24px rgba(74, 44, 23, 0.10);
+  --paw-shadow-lg: 0 12px 40px rgba(74, 44, 23, 0.18);
+  --paw-radius: 14px;
+  --paw-radius-sm: 10px;
+  --paw-transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  --paw-navbar-height: 72px;
+}
+
+/* ─── Navbar Container ─── */
+.paw-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: var(--paw-navbar-height);
+  background: linear-gradient(135deg, var(--paw-cream) 0%, var(--paw-cream-dark) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1.5px solid rgba(212, 165, 116, 0.35);
+  box-shadow: var(--paw-shadow);
+  transition: height var(--paw-transition),
+    box-shadow var(--paw-transition),
+    background var(--paw-transition);
+}
+
+.paw-navbar--scrolled {
+  height: 60px;
+  box-shadow: var(--paw-shadow-lg);
+  background: rgba(255, 248, 240, 0.92);
+}
+
+.paw-navbar__inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  gap: 16px;
+}
+
+/* ─── Left Section ─── */
+.paw-navbar__left {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+/* Brand */
+.paw-navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.paw-navbar__logo-img {
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 10px rgba(74, 44, 23, 0.12);
+  transition: transform var(--paw-transition), box-shadow var(--paw-transition);
+}
+
+.paw-navbar__brand:hover .paw-navbar__logo-img {
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 4px 18px rgba(232, 116, 42, 0.25);
+}
+
+.paw-navbar__brand-text {
+  font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--paw-brown-dark);
+  letter-spacing: -0.3px;
+  line-height: 1;
+}
+
+.paw-navbar__brand-accent {
+  background: linear-gradient(135deg, var(--paw-orange) 0%, var(--paw-orange-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Nav Links (Desktop) ─── */
+.paw-navbar__links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.paw-navbar__link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--paw-brown);
+  text-decoration: none;
+  border-radius: var(--paw-radius-sm);
+  transition: color var(--paw-transition), background var(--paw-transition);
+}
+
+.paw-navbar__link:hover {
+  color: var(--paw-orange);
+  background: rgba(232, 116, 42, 0.08);
+}
+
+.paw-navbar__link--active {
+  color: var(--paw-orange);
+}
+
+/* Active link indicator dot */
+.paw-navbar__link-indicator {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--paw-orange), var(--paw-orange-light));
+  transition: transform var(--paw-transition);
+}
+
+.paw-navbar__link--active .paw-navbar__link-indicator,
+.paw-navbar__link:hover .paw-navbar__link-indicator {
+  transform: translateX(-50%) scaleX(1);
+}
+
+/* ─── Right Section ─── */
+.paw-navbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ─── Profile Dropdown ─── */
+.paw-navbar__profile {
+  position: relative;
+}
+
+.paw-navbar__profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: 1.5px solid rgba(212, 165, 116, 0.4);
+  border-radius: 50px;
+  background: var(--paw-white);
+  cursor: pointer;
+  transition: border-color var(--paw-transition), box-shadow var(--paw-transition), background var(--paw-transition);
+}
+
+.paw-navbar__profile-btn:hover {
+  border-color: var(--paw-orange);
+  box-shadow: 0 2px 12px rgba(232, 116, 42, 0.15);
+}
+
+.paw-navbar__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--paw-orange), var(--paw-orange-light));
+  color: var(--paw-white);
+}
+
+.paw-navbar__avatar svg {
+  width: 18px;
+  height: 18px;
+}
+
+.paw-navbar__chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--paw-brown-light);
+}
+
+/* Dropdown Menu — animated by framer-motion */
+.paw-navbar__dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 200px;
+  background: var(--paw-white);
+  border: 1.5px solid rgba(212, 165, 116, 0.3);
+  border-radius: var(--paw-radius);
+  box-shadow: var(--paw-shadow-lg);
+  padding: 8px;
+}
+
+.paw-navbar__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--paw-brown);
+  text-decoration: none;
+  border-radius: var(--paw-radius-sm);
+  transition: background var(--paw-transition), color var(--paw-transition);
+}
+
+.paw-navbar__dropdown-item svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--paw-brown-light);
+  transition: color var(--paw-transition);
+}
+
+.paw-navbar__dropdown-item:hover {
+  background: rgba(232, 116, 42, 0.08);
+  color: var(--paw-orange);
+}
+
+.paw-navbar__dropdown-item:hover svg {
+  color: var(--paw-orange);
+}
+
+/* ─── Auth Buttons ─── */
+.paw-navbar__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 22px;
+  font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: transform var(--paw-transition),
+    box-shadow var(--paw-transition),
+    background var(--paw-transition),
+    color var(--paw-transition);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.paw-navbar__btn--login {
+  color: var(--paw-brown-dark);
+  background: transparent;
+  border: 1.5px solid var(--paw-tan);
+}
+
+.paw-navbar__btn--login:hover {
+  background: rgba(232, 116, 42, 0.08);
+  border-color: var(--paw-orange);
+  color: var(--paw-orange);
+  transform: translateY(-1px);
+}
+
+.paw-navbar__btn--signup {
+  color: var(--paw-white);
+  background: linear-gradient(135deg, var(--paw-orange) 0%, var(--paw-orange-light) 100%);
+  border: none;
+  box-shadow: 0 4px 14px rgba(232, 116, 42, 0.3);
+}
+
+.paw-navbar__btn--signup:hover {
+  box-shadow: 0 6px 22px rgba(232, 116, 42, 0.4);
+  transform: translateY(-2px);
+}
+
+/* ─── Hamburger (Mobile) ─── */
+.paw-navbar__hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  gap: 5px;
+  z-index: 1100;
+}
+
+.paw-navbar__hamburger span {
+  display: block;
+  width: 24px;
+  height: 2.5px;
+  background: var(--paw-brown-dark);
+  border-radius: 3px;
+  transition: transform var(--paw-transition),
+    opacity var(--paw-transition),
+    background var(--paw-transition);
+}
+
+.paw-navbar__hamburger--active span:nth-child(1) {
+  transform: translateY(7.5px) rotate(45deg);
+  background: var(--paw-orange);
+}
+
+.paw-navbar__hamburger--active span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.paw-navbar__hamburger--active span:nth-child(3) {
+  transform: translateY(-7.5px) rotate(-45deg);
+  background: var(--paw-orange);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Mobile Drawer — slides in from the left
+   ═══════════════════════════════════════════════════════════ */
+
+/* Overlay — animated by framer-motion */
+.paw-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(74, 44, 23, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Drawer — animated by framer-motion */
+.paw-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1060;
+  width: 300px;
+  max-width: 85vw;
+  background: linear-gradient(180deg, var(--paw-cream) 0%, var(--paw-white) 100%);
+  box-shadow: var(--paw-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Drawer header */
+.paw-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1.5px solid rgba(212, 165, 116, 0.3);
+}
+
+.paw-drawer__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.paw-drawer__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(232, 116, 42, 0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--paw-brown-dark);
+  transition: background var(--paw-transition), color var(--paw-transition), transform var(--paw-transition);
+}
+
+.paw-drawer__close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.paw-drawer__close:hover {
+  background: var(--paw-orange);
+  color: var(--paw-white);
+  transform: rotate(90deg);
+}
+
+/* Drawer links */
+.paw-drawer__links {
+  list-style: none;
+  margin: 0;
+  padding: 16px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Drawer link stagger — handled by framer-motion */
+
+.paw-drawer__link {
+  display: block;
+  padding: 12px 18px;
+  font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--paw-brown);
+  text-decoration: none;
+  border-radius: var(--paw-radius-sm);
+  transition: background var(--paw-transition), color var(--paw-transition), padding-left var(--paw-transition);
+}
+
+.paw-drawer__link:hover {
+  background: rgba(232, 116, 42, 0.1);
+  color: var(--paw-orange);
+  padding-left: 24px;
+}
+
+.paw-drawer__link--active {
+  color: var(--paw-orange);
+  background: rgba(232, 116, 42, 0.08);
+  border-left: 3px solid var(--paw-orange);
+}
+
+/* Drawer divider */
+.paw-drawer__divider {
+  height: 1.5px;
+  margin: 8px 20px;
+  background: linear-gradient(90deg, transparent, var(--paw-tan), transparent);
+}
+
+/* Drawer auth section */
+.paw-drawer__auth {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 16px 24px;
+}
+
+.paw-drawer__btn {
+  width: 100%;
+  text-align: center;
+}
+
+/* Drawer decoration */
+.paw-drawer__decoration {
+  margin-top: auto;
+  padding: 24px;
+  text-align: center;
+  font-size: 2.5rem;
+  opacity: 0.15;
+  user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Responsive Breakpoints
+   ═══════════════════════════════════════════════════════════ */
+
+/* Tablet — hide desktop nav, show hamburger */
+@media (max-width: 1024px) {
+  .paw-navbar__links {
+    display: none;
+  }
+
+  .paw-navbar__btn {
+    display: none;
+  }
+
+  .paw-navbar__profile {
+    display: none;
+  }
+
+  .paw-navbar__hamburger {
+    display: flex;
+  }
+}
+
+/* Mobile fine-tuning */
+@media (max-width: 640px) {
+  .paw-navbar__inner {
+    padding: 0 16px;
+  }
+
+  .paw-navbar__brand-text {
+    font-size: 1.15rem;
+  }
+
+  .paw-navbar__logo-img {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  :root {
+    --paw-navbar-height: 62px;
+  }
+}
+
+/* Large desktop — more breathing room */
+@media (min-width: 1440px) {
+  .paw-navbar__inner {
+    padding: 0 48px;
+  }
+}
+
+/* ─── Spacer util for page content below navbar ─── */
+.paw-navbar-spacer {
+  height: var(--paw-navbar-height);
+}
