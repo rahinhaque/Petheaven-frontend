@@ -4,12 +4,28 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { FaListAlt, FaCheckCircle, FaPaw, FaEye, FaEdit, FaTrash, FaInbox, FaTimes } from 'react-icons/fa';
+import { FaListAlt, FaCheckCircle, FaPaw, FaEye, FaEdit, FaTrash, FaInbox } from 'react-icons/fa';
+import '../DashboardForm.css';
+
+import EditPetModal from '@/components/modal/EditPetModal';
+import DeleteConfirmModal from '@/components/modal/DeleteConfirmModal';
+import RequestsModal from '@/components/modal/RequestsModal';
 
 export default function MyListingsClient({ initialAnimals }) {
   const [animals, setAnimals] = useState(initialAnimals || []);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Requests Modal State
+  const [isRequestsModalOpen, setIsRequestsModalOpen] = useState(false);
   const [selectedPetName, setSelectedPetName] = useState('');
+  
+  // Delete Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedPetForDelete, setSelectedPetForDelete] = useState(null);
+
+  // Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Simulated requests for the demo
   const [requests, setRequests] = useState([
@@ -30,36 +46,103 @@ export default function MyListingsClient({ initialAnimals }) {
   ]);
 
   const totalListings = animals.length;
-  // Assume status is available unless marked adopted (simulating for now)
   const availableCount = animals.filter(a => a.status !== 'adopted').length;
   const adoptedCount = animals.filter(a => a.status === 'adopted').length;
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this listing?")) return;
-    
-    try {
-      // Simulate API DELETE request
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setAnimals(prev => prev.filter(animal => animal._id !== id));
-      toast.success("Listing deleted successfully!");
-    } catch (error) {
-      toast.error("Failed to delete listing.");
-    }
-  };
-
+  // --- Requests Logic ---
   const openRequestsModal = (petName) => {
     setSelectedPetName(petName);
-    setIsModalOpen(true);
+    setIsRequestsModalOpen(true);
   };
 
   const closeRequestsModal = () => {
-    setIsModalOpen(false);
+    setIsRequestsModalOpen(false);
     setSelectedPetName('');
   };
 
   const handleRequestAction = (reqId, action) => {
     setRequests(prev => prev.filter(req => req.id !== reqId));
     toast.success(`Request ${action} successfully!`);
+  };
+
+  // --- Delete Logic ---
+  const openDeleteModal = (animal) => {
+    setSelectedPetForDelete(animal);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedPetForDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedPetForDelete) return;
+    try {
+      // Simulate API DELETE request
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setAnimals(prev => prev.filter(animal => animal._id !== selectedPetForDelete._id));
+      toast.success(`${selectedPetForDelete.petName} has been deleted from your listings.`);
+      closeDeleteModal();
+    } catch (error) {
+      toast.error("Failed to delete listing. Please try again.");
+      closeDeleteModal();
+    }
+  };
+
+  // --- Edit Logic ---
+  const openEditModal = (animal) => {
+    setEditFormData({ ...animal });
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditFormData(null);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    const formElementData = new FormData(e.currentTarget);
+    const animalData = Object.fromEntries(formElementData.entries());
+    console.log("Form Data from Edit Modal:", animalData);
+
+    const res = await fetch(`http://localhost:5000/animals/${editFormData._id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(animalData)
+    });
+    
+    const updatedAnimal = await res.json();
+    console.log("Response from server:", updatedAnimal);  
+    
+    setIsSaving(true);
+    try {
+      // Simulate API PUT request
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update local state
+      setAnimals(prev => prev.map(animal => 
+        animal._id === editFormData._id ? { ...editFormData, ...animalData } : animal
+      ));
+      
+      toast.success(`${animalData.petName}'s details have been successfully updated!`);
+      closeEditModal();
+    } catch (error) {
+      toast.error("Failed to update pet details.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -135,15 +218,15 @@ export default function MyListingsClient({ initialAnimals }) {
                   >
                     <FaEye /> View
                   </Link>
-                  <Link 
-                    href={`/dashboard/update-pet/${animal._id}`}
-                    className="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-600 hover:text-white py-2 rounded-lg font-semibold text-sm transition-colors"
+                  <button 
+                    onClick={() => openEditModal(animal)}
+                    className="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-600 hover:text-white py-2 rounded-lg font-semibold text-sm transition-colors cursor-pointer"
                   >
                     <FaEdit /> Edit
-                  </Link>
+                  </button>
                   <button 
-                    onClick={() => handleDelete(animal._id)}
-                    className="flex items-center justify-center gap-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white py-2 rounded-lg font-semibold text-sm transition-colors"
+                    onClick={() => openDeleteModal(animal)}
+                    className="flex items-center justify-center gap-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white py-2 rounded-lg font-semibold text-sm transition-colors cursor-pointer"
                   >
                     <FaTrash /> Delete
                   </button>
@@ -168,61 +251,31 @@ export default function MyListingsClient({ initialAnimals }) {
         </div>
       )}
 
-      {/* Requests Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-[#D4A574]/30 animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center justify-between p-6 border-b border-[#D4A574]/20 bg-[#FFF8F0]">
-              <h2 className="text-2xl font-bold text-[#4A2C17]">
-                Adoption Requests <span className="text-[#E8742A]">({selectedPetName})</span>
-              </h2>
-              <button 
-                onClick={closeRequestsModal}
-                className="text-[#8B5E3C] hover:text-[#E8742A] bg-white rounded-full p-2 shadow-sm transition-colors"
-              >
-                <FaTimes size={18} />
-              </button>
-            </div>
-            <div className="p-6 max-h-[60vh] overflow-y-auto bg-white">
-              {requests.length > 0 ? (
-                <div className="flex flex-col gap-4">
-                  {requests.map(req => (
-                    <div key={req.id} className="border border-[#D4A574]/30 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#F5E6D3]/20">
-                      <div>
-                        <p className="font-bold text-[#4A2C17] text-lg">{req.userName}</p>
-                        <p className="text-[#6B3E26] text-sm mb-1">{req.email}</p>
-                        <p className="text-sm font-semibold text-[#8B5E3C]">Pickup: <span className="text-[#4A2C17]">{req.pickupDate}</span></p>
-                      </div>
-                      <div className="flex gap-3">
-                        <button 
-                          onClick={() => handleRequestAction(req.id, 'approved')}
-                          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg text-sm shadow-sm transition-colors"
-                        >
-                          Approve
-                        </button>
-                        <button 
-                          onClick={() => handleRequestAction(req.id, 'rejected')}
-                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg text-sm shadow-sm transition-colors"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-10">
-                  <div className="w-16 h-16 bg-[#FFF8F0] rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FaInbox className="text-[#D4A574] text-2xl" />
-                  </div>
-                  <h3 className="text-xl font-bold text-[#4A2C17]">No Pending Requests</h3>
-                  <p className="text-[#6B3E26]">There are no adoption requests for this pet yet.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Extracted Modal Components */}
+      
+      <RequestsModal 
+        isOpen={isRequestsModalOpen} 
+        selectedPetName={selectedPetName} 
+        requests={requests} 
+        onClose={closeRequestsModal} 
+        onAction={handleRequestAction} 
+      />
+
+      <DeleteConfirmModal 
+        isOpen={isDeleteModalOpen} 
+        animal={selectedPetForDelete} 
+        onClose={closeDeleteModal} 
+        onConfirm={confirmDelete} 
+      />
+
+      <EditPetModal 
+        isOpen={isEditModalOpen} 
+        formData={editFormData} 
+        isSaving={isSaving} 
+        onClose={closeEditModal} 
+        onChange={handleEditChange} 
+        onSubmit={handleEditSubmit} 
+      />
 
     </div>
   );
