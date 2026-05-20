@@ -19,17 +19,19 @@ const AllAnimalCards = ({ animal }) => {
     adoptionFee = 0,
   } = animal || {};
 
+  const [imgError, setImgError] = React.useState(false);
+
   return (
     <div className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(74,44,23,0.06)] hover:shadow-[0_12px_30px_rgba(74,44,23,0.12)] transition-all duration-300 border-[1.5px] border-[#D4A574]/30 hover:border-[#E8742A]/50 hover:-translate-y-1">
       {/* Image Section */}
       <div className="relative h-64 w-full overflow-hidden bg-[#F5E6D3]">
-        <img
-          src={imageUrl}
+        <Image
+          src={imgError ? "https://via.placeholder.com/400x300.png?text=No+Image" : imageUrl}
           alt={`Photo of ${petName}`}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          onError={(e) => {
-            e.target.src = "https://via.placeholder.com/400x300.png?text=No+Image";
-          }}
+          fill
+          unoptimized
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={() => setImgError(true)}
         />
         <div className="absolute top-4 left-4 bg-[#FFF8F0]/90 backdrop-blur-sm text-[#4A2C17] font-bold text-xs px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5">
           <FaPaw className="text-[#E8742A]" />

@@ -1,4 +1,4 @@
-'use client'
+
 
 import AllAnimalCards from '@/components/cards/AllAnimalCards';
 import React from 'react';
