@@ -79,12 +79,26 @@ export default function MyListingsClient({ initialAnimals }) {
   const confirmDelete = async () => {
     if (!selectedPetForDelete) return;
     try {
-      // Simulate API DELETE request
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const res = await fetch(
+        `http://localhost:5000/animals/${selectedPetForDelete._id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Server responded with an error.");
+      }
+
+      // Remove from local state
       setAnimals(prev => prev.filter(animal => animal._id !== selectedPetForDelete._id));
       toast.success(`${selectedPetForDelete.petName} has been deleted from your listings.`);
       closeDeleteModal();
     } catch (error) {
+      console.error("Error deleting pet:", error);
       toast.error("Failed to delete listing. Please try again.");
       closeDeleteModal();
     }
