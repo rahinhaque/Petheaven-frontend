@@ -5,6 +5,7 @@ import AdoptionForm from '@/components/forms/AdoptionForm';
 
 const AnimalDetailsPage = async({params}) => {
   const {id} = await params;
+  console.log(id);
   
   let animalData = null;
   try {

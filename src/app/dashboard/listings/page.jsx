@@ -1,27 +1,20 @@
 import React from 'react';
-import { FaListAlt } from 'react-icons/fa';
+import MyListingsClient from './MyListingsClient';
 
-export default function ListingsPage() {
-  return (
-    <div className="paw-dashboard__content">
-      <div className="paw-dashboard__welcome">
-        <h1 className="paw-dashboard__welcome-title">My Listings</h1>
-        <p className="paw-dashboard__welcome-subtitle">
-          Manage the pets you have listed for adoption.
-        </p>
-      </div>
+export default async function ListingsPage() {
+  let animals = [];
+  try {
+    // For now we use the hardcoded email as per user request to fetch user's specific listings
+    const userEmail = "alex.johnson@example.com";
+    const res = await fetch(`http://localhost:5000/animals/user/${userEmail}`, {
+      cache: 'no-store'
+    });
+    if (res.ok) {
+      animals = await res.json();
+    }
+  } catch (error) {
+    console.error("Failed to fetch user listings:", error);
+  }
 
-      <div className="paw-dashboard__stats" style={{ display: 'block', marginTop: '32px' }}>
-        <div className="paw-dashboard__stat-card" style={{ maxWidth: '100%' }}>
-          <div className="paw-dashboard__stat-icon">
-            <FaListAlt />
-          </div>
-          <div className="paw-dashboard__stat-info">
-            <h4>No active listings</h4>
-            <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>You don't have any pets listed for adoption right now.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <MyListingsClient initialAnimals={animals} />;
 }
