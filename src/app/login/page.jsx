@@ -4,8 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaGoogle, FaEye, FaEyeSlash, FaPaw, FaHeart } from 'react-icons/fa';
 import { toast } from 'sonner';
+import { authClient } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -17,12 +20,36 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // 1. Immediate trigger log
+    console.log('🚀 Login Form Submit Triggered!');
+
+    // 2. Extract using standard HTML5 FormData API
+    const formElementData = new FormData(e.currentTarget);
+    const formValues = Object.fromEntries(formElementData.entries());
+    console.log('📦 Login Data via FormData API:', formValues);
+
+    // 3. Extract from React controlled state
+    console.log('⚛️ Login Data via React State:', formData);
+
     try {
-      // TODO: Replace with real auth logic
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      toast.success("Logged in successfully! Welcome back 🐾");
+      const { data, error } = await authClient.signIn.email({
+        email: formData.email,
+        password: formData.password,
+        callbackURL: "/"
+      });
+
+      if (error) {
+        console.error('❌ Better Auth Login Error:', error);
+        toast.error(error.message || "Invalid email or password. Please try again.");
+      } else {
+        console.log('✅ Better Auth Login Success:', data);
+        toast.success("Logged in successfully! Welcome back 🐾");
+        router.push('/');
+      }
     } catch (err) {
-      toast.error("Invalid email or password. Please try again.");
+      console.error('❌ Catch Block Login Error:', err);
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

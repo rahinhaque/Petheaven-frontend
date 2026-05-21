@@ -1,15 +1,20 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
+import { authClient } from '@/lib/auth-client';
 
 export default function AdoptionForm({ petName, petId }) {
   const [loading, setLoading] = useState(false);
 
-  // Demo user data (could come from context/auth later)
+  // Get dynamic session user
+  const { data, isPending } = authClient.useSession();
+  const sessionUser = data?.user;
+
   const user = {
-    name: 'Alex Johnson',
-    email: 'alex.johnson@example.com'
+    name: isPending ? 'Loading...' : (sessionUser?.name || 'Guest'),
+    email: isPending ? 'Loading...' : (sessionUser?.email || '')
   };
 
   const [formData, setFormData] = useState({
@@ -27,6 +32,11 @@ export default function AdoptionForm({ petName, petId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!sessionUser) {
+      toast.error('You must be logged in to submit an adoption request.');
+      return;
+    }
+    
     setLoading(true);
 
     const adoptionRequest = {
@@ -52,6 +62,8 @@ export default function AdoptionForm({ petName, petId }) {
       setLoading(false);
     }
   };
+
+  const isSubmitDisabled = loading || isPending || !sessionUser;
 
   return (
     <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(74,44,23,0.08)] border-[1.5px] border-[#D4A574]/30 p-6 md:p-8">
@@ -98,7 +110,8 @@ export default function AdoptionForm({ petName, petId }) {
             value={formData.pickupDate}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2.5 bg-[#FFF8F0]/50 text-[#4A2C17] border-[1.5px] border-[#D4A574]/40 rounded-lg outline-none focus:border-[#E8742A] focus:ring-2 focus:ring-[#E8742A]/10 transition-all font-medium"
+            disabled={!sessionUser}
+            className="w-full px-4 py-2.5 bg-[#FFF8F0]/50 text-[#4A2C17] border-[1.5px] border-[#D4A574]/40 rounded-lg outline-none focus:border-[#E8742A] focus:ring-2 focus:ring-[#E8742A]/10 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -108,19 +121,30 @@ export default function AdoptionForm({ petName, petId }) {
             name="message"
             value={formData.message}
             onChange={handleChange}
-            placeholder="Tell us a little bit about your home or any questions you have..."
+            placeholder={sessionUser ? "Tell us a little bit about your home or any questions you have..." : "Please log in to submit details..."}
             rows={4}
-            className="w-full px-4 py-2.5 bg-[#FFF8F0]/50 text-[#4A2C17] border-[1.5px] border-[#D4A574]/40 rounded-lg outline-none focus:border-[#E8742A] focus:ring-2 focus:ring-[#E8742A]/10 transition-all resize-y font-medium"
+            disabled={!sessionUser}
+            className="w-full px-4 py-2.5 bg-[#FFF8F0]/50 text-[#4A2C17] border-[1.5px] border-[#D4A574]/40 rounded-lg outline-none focus:border-[#E8742A] focus:ring-2 focus:ring-[#E8742A]/10 transition-all resize-y font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
         <button 
           type="submit" 
-          disabled={loading}
+          disabled={isSubmitDisabled}
           className="mt-4 w-full py-3.5 bg-gradient-to-r from-[#E8742A] to-[#F5923E] hover:from-[#d66520] hover:to-[#e07d2c] text-white font-bold rounded-lg shadow-[0_4px_14px_rgba(232,116,42,0.3)] hover:shadow-[0_6px_20px_rgba(232,116,42,0.4)] hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
         >
           {loading ? 'Submitting...' : 'Submit Adoption Request'}
         </button>
+
+        {!isPending && !sessionUser && (
+          <p className="text-red-500 text-sm font-semibold text-center mt-2">
+            You must be logged in to submit an adoption request.{' '}
+            <Link href="/login" className="underline text-[#E8742A] font-bold">
+              Log in here
+            </Link>
+            .
+          </p>
+        )}
       </form>
     </div>
   );

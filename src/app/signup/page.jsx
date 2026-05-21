@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaGoogle, FaEye, FaEyeSlash, FaPaw, FaCheck, FaTimes } from 'react-icons/fa';
 import { toast } from 'sonner';
+import { authClient } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
 
 const PasswordRule = ({ passed, label }) => (
   <li className={`flex items-center gap-2 text-sm font-medium transition-colors duration-200 ${passed ? 'text-green-600' : 'text-[#8B5E3C]'}`}>
@@ -16,6 +18,7 @@ const PasswordRule = ({ passed, label }) => (
 );
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -43,19 +46,52 @@ export default function SignUpPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!rules.minLength) return toast.error('Password must be at least 6 characters.');
-    if (!rules.uppercase) return toast.error('Password must contain at least one uppercase letter.');
-    if (!rules.lowercase) return toast.error('Password must contain at least one lowercase letter.');
-    if (!rules.match)     return toast.error('Passwords do not match.');
-
     setLoading(true);
+
+    // Validate password rules
+    if (!rules.minLength) {
+      setLoading(false);
+      return toast.error('Password must be at least 6 characters.');
+    }
+    if (!rules.uppercase) {
+      setLoading(false);
+      return toast.error('Password must contain at least one uppercase letter.');
+    }
+    if (!rules.lowercase) {
+      setLoading(false);
+      return toast.error('Password must contain at least one lowercase letter.');
+    }
+    if (!rules.match) {
+      setLoading(false);
+      return toast.error('Passwords do not match.');
+    }
+
     try {
-      // TODO: Replace with real registration logic
-      await new Promise(resolve => setTimeout(resolve, 1400));
-      toast.success('Account created successfully! Welcome to Paw Heaven 🐾');
+      console.log('🚀 Sending signup request with:', {
+        name: formData.name,
+        email: formData.email,
+        image: formData.photoURL,
+      });
+
+      const { data, error } = await authClient.signUp.email({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        image: formData.photoURL || undefined,
+        callbackURL: "/"
+      });
+
+      if (error) {
+        console.error('❌ Better Auth Signup Error:', error);
+        toast.error(error.message || 'Something went wrong during sign-up. Please try again.');
+      } else {
+        console.log('✅ Better Auth Signup Success:', data);
+        toast.success('Account created successfully! Welcome to Paw Heaven 🐾');
+        router.push('/');
+      }
     } catch (err) {
-      toast.error('Something went wrong. Please try again.');
+      console.error('❌ Catch Block Signup Error:', err);
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -201,7 +237,7 @@ export default function SignUpPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-bold text-[#6B3E26]">Photo URL <span className="text-[#B89070] font-normal">(optional)</span></label>
               <input
-                type="url"
+                type="text"
                 name="photoURL"
                 value={formData.photoURL}
                 onChange={handleChange}
@@ -273,6 +309,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
+              onClick={() => console.log('🖱️ Button clicked, formData state:', formData)}
               className="w-full py-3.5 mt-1 bg-gradient-to-r from-[#E8742A] to-[#F5923E] hover:from-[#d66520] hover:to-[#e07d2c] text-white font-extrabold text-base rounded-xl shadow-[0_4px_18px_rgba(232,116,42,0.35)] hover:shadow-[0_6px_24px_rgba(232,116,42,0.45)] hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
             >
               {loading ? (

@@ -1,3 +1,8 @@
+const dns = require("dns");
+
+// Force Node.js to use Google and Cloudflare DNS servers for all lookups
+dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+
 import { Geist, Geist_Mono } from "next/font/google";
 import { Outfit } from "next/font/google";
 import Navbar from "@/components/shared/Navbar";
@@ -23,7 +28,8 @@ const outfit = Outfit({
 
 export const metadata = {
   title: "Paw Heaven || Home",
-  description: "Adopt today, love forever — find your perfect furry companion at Paw Heaven.",
+  description:
+    "Adopt today, love forever — find your perfect furry companion at Paw Heaven.",
 };
 
 export default function RootLayout({ children }) {

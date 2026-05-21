@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import "./Navbar.css";
+import { authClient } from "@/lib/auth-client";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -120,6 +121,42 @@ export default function Navbar() {
     };
   }, [mobileOpen]);
 
+  const { data, isPending, error } = authClient.useSession();
+  const user = data?.user;
+  const session = data?.session;
+
+  // Debug logging
+  useEffect(() => {
+    if (isPending) {
+      console.log("⏳ Navbar: Session is loading...");
+    } else if (error) {
+      console.error("❌ Navbar: Session error:", error);
+    } else if (data) {
+      console.log("👤 User:", data.user);
+      console.log("🔑 Session:", data.session);
+    } else {
+      console.log("👤 Navbar: No user logged in");
+    }
+  }, [data, isPending, error]);
+
+  // Handle sign out
+  const handleSignOut = async () => {
+    await authClient.signOut();
+    setProfileOpen(false);
+    setMobileOpen(false);
+  };
+
+  // Get user initials for avatar fallback
+  const getInitials = (name) => {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <>
       <motion.nav
@@ -136,7 +173,11 @@ export default function Navbar() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.45, delay: 0.1, ease: "easeOut" }}
             >
-              <Link href="/" className="paw-navbar__brand" aria-label="Paw Heaven Home">
+              <Link
+                href="/"
+                className="paw-navbar__brand"
+                aria-label="Paw Heaven Home"
+              >
                 <Image
                   src="/assets/navImg.png.png"
                   alt="Paw Heaven Logo"
@@ -152,7 +193,11 @@ export default function Navbar() {
             </motion.div>
 
             {/* Desktop nav links */}
-            <ul className="paw-navbar__links" role="navigation" aria-label="Main navigation">
+            <ul
+              className="paw-navbar__links"
+              role="navigation"
+              aria-label="Main navigation"
+            >
               {navLinks.map((link, i) => (
                 <motion.li
                   key={link.href}
@@ -187,115 +232,170 @@ export default function Navbar() {
             animate="visible"
             variants={rightSectionVariants}
           >
-            {/* Profile dropdown */}
-            <div className="paw-navbar__profile" ref={profileRef}>
-              <motion.button
-                className="paw-navbar__profile-btn"
-                onClick={() => setProfileOpen((v) => !v)}
-                aria-expanded={profileOpen}
-                aria-haspopup="true"
-                aria-label="Profile menu"
-                id="navbar-profile-btn"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-              >
-                {/* User avatar placeholder */}
-                <span className="paw-navbar__avatar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="8" r="4" />
-                    <path d="M20 21a8 8 0 1 0-16 0" />
-                  </svg>
-                </span>
-                <motion.svg
-                  className="paw-navbar__chevron"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  width="16"
-                  height="16"
-                  animate={{ rotate: profileOpen ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06z"
-                    clipRule="evenodd"
-                  />
-                </motion.svg>
-              </motion.button>
-
-              {/* Dropdown menu */}
-              <AnimatePresence>
-                {profileOpen && (
-                  <motion.div
-                    className="paw-navbar__dropdown paw-navbar__dropdown--open"
-                    role="menu"
-                    aria-label="Profile options"
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    variants={dropdownVariants}
+            {isPending ? (
+              // Loading state
+              <div className="paw-navbar__loading">Loading...</div>
+            ) : user ? (
+              // ─── LOGGED IN: Profile Dropdown + Logout ───
+              <>
+                {/* Profile dropdown */}
+                <div className="paw-navbar__profile" ref={profileRef}>
+                  <motion.button
+                    className="paw-navbar__profile-btn"
+                    onClick={() => setProfileOpen((v) => !v)}
+                    aria-expanded={profileOpen}
+                    aria-haspopup="true"
+                    aria-label="Profile menu"
+                    id="navbar-profile-btn"
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
                   >
-                    <Link
-                      href="/dashboard"
-                      className="paw-navbar__dropdown-item"
-                      role="menuitem"
-                      onClick={() => setProfileOpen(false)}
+                    {/* User avatar - shows image if available, else initials */}
+                    <span className="paw-navbar__avatar">
+                      {user.image ? (
+                        <Image
+                          src={user.image}
+                          alt={user.name || "User"}
+                          width={32}
+                          height={32}
+                          className="paw-navbar__avatar-img"
+                        />
+                      ) : (
+                        <span className="paw-navbar__avatar-initials">
+                          {getInitials(user.name)}
+                        </span>
+                      )}
+                    </span>
+                    <span className="paw-navbar__user-name">
+                      {user.name || user.email}
+                    </span>
+                    <motion.svg
+                      className="paw-navbar__chevron"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      width="16"
+                      height="16"
+                      animate={{ rotate: profileOpen ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="7" height="7" rx="1" />
-                        <rect x="14" y="3" width="7" height="7" rx="1" />
-                        <rect x="3" y="14" width="7" height="7" rx="1" />
-                        <rect x="14" y="14" width="7" height="7" rx="1" />
-                      </svg>
-                      Dashboard
-                    </Link>
-                    <Link
-                      href="/login"
-                      className="paw-navbar__dropdown-item"
-                      role="menuitem"
-                      onClick={() => setProfileOpen(false)}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                        <polyline points="10 17 15 12 10 7" />
-                        <line x1="15" y1="12" x2="3" y2="12" />
-                      </svg>
-                      Login
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="paw-navbar__dropdown-item"
-                      role="menuitem"
-                      onClick={() => setProfileOpen(false)}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <line x1="19" y1="8" x2="19" y2="14" />
-                        <line x1="22" y1="11" x2="16" y2="11" />
-                      </svg>
-                      Sign Up
-                    </Link>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                      <path
+                        fillRule="evenodd"
+                        d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06z"
+                        clipRule="evenodd"
+                      />
+                    </motion.svg>
+                  </motion.button>
 
-            {/* Auth buttons */}
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-              <Link href="/login" className="paw-navbar__btn paw-navbar__btn--login" id="navbar-login-btn">
-                Login
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/signup" className="paw-navbar__btn paw-navbar__btn--signup" id="navbar-signup-btn">
-                Sign Up
-              </Link>
-            </motion.div>
+                  {/* Dropdown menu */}
+                  <AnimatePresence>
+                    {profileOpen && (
+                      <motion.div
+                        className="paw-navbar__dropdown paw-navbar__dropdown--open"
+                        role="menu"
+                        aria-label="Profile options"
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={dropdownVariants}
+                      >
+                        <div className="paw-navbar__dropdown-header">
+                          <span className="paw-navbar__dropdown-name">
+                            {user.name}
+                          </span>
+                          <span className="paw-navbar__dropdown-email">
+                            {user.email}
+                          </span>
+                        </div>
+                        <Link
+                          href="/dashboard"
+                          className="paw-navbar__dropdown-item"
+                          role="menuitem"
+                          onClick={() => setProfileOpen(false)}
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                          </svg>
+                          Dashboard
+                        </Link>
+                        <button
+                          className="paw-navbar__dropdown-item paw-navbar__dropdown-item--danger"
+                          role="menuitem"
+                          onClick={handleSignOut}
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                            <polyline points="10 17 15 12 10 7" />
+                            <line x1="15" y1="12" x2="3" y2="12" />
+                          </svg>
+                          Logout
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Desktop Logout Button */}
+                <motion.button
+                  className="paw-navbar__btn paw-navbar__btn--logout"
+                  onClick={handleSignOut}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  Logout
+                </motion.button>
+              </>
+            ) : (
+              // ─── GUEST: Login + Signup Buttons ───
+              <>
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Link
+                    href="/login"
+                    className="paw-navbar__btn paw-navbar__btn--login"
+                    id="navbar-login-btn"
+                  >
+                    Login
+                  </Link>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link
+                    href="/signup"
+                    className="paw-navbar__btn paw-navbar__btn--signup"
+                    id="navbar-signup-btn"
+                  >
+                    Sign Up
+                  </Link>
+                </motion.div>
+              </>
+            )}
 
             {/* Hamburger toggle (mobile) */}
             <button
-              className={`paw-navbar__hamburger${mobileOpen ? " paw-navbar__hamburger--active" : ""}`}
+              className={`paw-navbar__hamburger${
+                mobileOpen ? " paw-navbar__hamburger--active" : ""
+              }`}
               onClick={() => setMobileOpen((v) => !v)}
               aria-label="Toggle menu"
               aria-expanded={mobileOpen}
@@ -356,7 +456,14 @@ export default function Navbar() {
                   whileHover={{ rotate: 90, scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
@@ -376,7 +483,9 @@ export default function Navbar() {
                     <Link
                       href={link.href}
                       className={`paw-drawer__link${
-                        pathname === link.href ? " paw-drawer__link--active" : ""
+                        pathname === link.href
+                          ? " paw-drawer__link--active"
+                          : ""
                       }`}
                       onClick={() => setMobileOpen(false)}
                     >
@@ -409,20 +518,48 @@ export default function Navbar() {
                 >
                   Dashboard
                 </Link>
-                <Link
-                  href="/login"
-                  className="paw-navbar__btn paw-navbar__btn--login paw-drawer__btn"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="paw-navbar__btn paw-navbar__btn--signup paw-drawer__btn"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Sign Up
-                </Link>
+
+                {user ? (
+                  <>
+                    <div className="paw-drawer__user-info">
+                      {user.image && (
+                        <Image
+                          src={user.image}
+                          alt={user.name}
+                          width={40}
+                          height={40}
+                          className="paw-drawer__avatar"
+                        />
+                      )}
+                      <span className="paw-drawer__user-name">
+                        {user.name || user.email}
+                      </span>
+                    </div>
+                    <button
+                      className="paw-navbar__btn paw-navbar__btn--logout paw-drawer__btn"
+                      onClick={handleSignOut}
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="paw-navbar__btn paw-navbar__btn--login paw-drawer__btn"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="paw-navbar__btn paw-navbar__btn--signup paw-drawer__btn"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </motion.div>
 
               {/* Paw print decoration */}

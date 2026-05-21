@@ -6,13 +6,15 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import '../DashboardForm.css';
+import { authClient } from '@/lib/auth-client';
 
 export default function AddPetPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // Auto-filled owner email
-  const ownerEmail = "alex.johnson@example.com";
+  // Auto-filled owner email dynamically from session
+  const { data, isPending } = authClient.useSession();
+  const ownerEmail = data?.user?.email || "";
 
   const [formData, setFormData] = useState({
     petName: '',
