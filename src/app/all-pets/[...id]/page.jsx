@@ -1,20 +1,31 @@
-import React from 'react';
-import Image from 'next/image';
-import { FaMapMarkerAlt, FaPaw, FaInfoCircle, FaHeartbeat, FaSyringe, FaMoneyBillWave, FaLock } from 'react-icons/fa';
-import AdoptionForm from '@/components/forms/AdoptionForm';
-import { auth } from '@/lib/auth';
+import React from "react";
+import Image from "next/image";
+import {
+  FaMapMarkerAlt,
+  FaPaw,
+  FaInfoCircle,
+  FaHeartbeat,
+  FaSyringe,
+  FaMoneyBillWave,
+  FaLock,
+  FaCheckCircle,
+  FaClock,
+} from "react-icons/fa";
+import Link from "next/link";
+import AdoptionForm from "@/components/forms/AdoptionForm";
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
 const AnimalDetailsPage = async ({ params }) => {
   const { id } = await params;
-  console.log(id);
 
-  // ✅ Get session server-side
+  // Get session server-side
   const session = await auth.api.getSession({
     headers: await headers(),
   });
   const currentUserEmail = session?.user?.email || null;
 
+  // Fetch animal data
   let animalData = null;
   try {
     const res = await fetch(`http://localhost:5000/animals/${id}`, {
@@ -43,6 +54,23 @@ const AnimalDetailsPage = async ({ params }) => {
     );
   }
 
+  // Check if current user already applied
+  let hasAlreadyApplied = false;
+  if (currentUserEmail && animalData) {
+    try {
+      const adoptionRes = await fetch(
+        `http://localhost:5000/adoptions/check?petId=${id}&email=${currentUserEmail}`,
+        { cache: "no-store" },
+      );
+      if (adoptionRes.ok) {
+        const adoptionData = await adoptionRes.json();
+        hasAlreadyApplied = adoptionData.hasApplied;
+      }
+    } catch (error) {
+      console.error("Failed to check adoption status:", error);
+    }
+  }
+
   const {
     _id,
     petName = "Unknown Pet",
@@ -57,10 +85,12 @@ const AnimalDetailsPage = async ({ params }) => {
     vaccinationStatus = "Not specified",
     description = "No description available for this pet.",
     ownerEmail = null,
+    status = "available",
   } = animalData;
 
-  // ✅ Check if current user is the owner
+  // Check if current user is the owner
   const isOwner = currentUserEmail && currentUserEmail === ownerEmail;
+  const isAdopted = status === "adopted";
 
   return (
     <div className="min-h-screen bg-[#FFF8F0] font-['Outfit'] pb-20">
@@ -85,7 +115,6 @@ const AnimalDetailsPage = async ({ params }) => {
             {/* Image Card */}
             <div className="bg-white p-4 rounded-3xl shadow-[0_8px_30px_rgba(74,44,23,0.06)] border-[1.5px] border-[#D4A574]/20">
               <div className="relative h-[300px] md:h-[450px] w-full rounded-2xl overflow-hidden bg-[#F5E6D3]">
-                {/* Fallback styling implicitly handled by next/image or we can just use unoptimized */}
                 <Image
                   src={imageUrl}
                   alt={`Photo of ${petName}`}
@@ -103,6 +132,15 @@ const AnimalDetailsPage = async ({ params }) => {
                     {gender}
                   </span>
                 </div>
+
+                {/* Adopted Ribbon */}
+                {isAdopted && (
+                  <div className="absolute top-4 right-4">
+                    <span className="bg-green-500/90 backdrop-blur-md text-white font-bold text-sm px-4 py-2 rounded-full shadow-md flex items-center gap-2">
+                      <FaCheckCircle /> Adopted
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -142,21 +180,21 @@ const AnimalDetailsPage = async ({ params }) => {
 
               <div className="space-y-4 mb-8">
                 <div className="flex items-center gap-3 text-[#6B3E26] bg-[#FFF8F0] p-4 rounded-xl border border-[#D4A574]/20">
-                  <FaHeartbeat className="text-[#E8742A] text-xl" />
+                  <FaHeartbeat className="text-[#E8742A] text-xl flex-shrink-0" />
                   <div>
                     <span className="font-semibold block">Health Status</span>
                     <span>{healthStatus}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 text-[#6B3E26] bg-[#FFF8F0] p-4 rounded-xl border border-[#D4A574]/20">
-                  <FaSyringe className="text-[#E8742A] text-xl" />
+                  <FaSyringe className="text-[#E8742A] text-xl flex-shrink-0" />
                   <div>
                     <span className="font-semibold block">Vaccination</span>
                     <span>{vaccinationStatus}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 text-[#6B3E26] bg-[#FFF8F0] p-4 rounded-xl border border-[#D4A574]/20">
-                  <FaMoneyBillWave className="text-[#E8742A] text-xl" />
+                  <FaMoneyBillWave className="text-[#E8742A] text-xl flex-shrink-0" />
                   <div>
                     <span className="font-semibold block">Adoption Fee</span>
                     <span className="font-bold text-[#E8742A]">
@@ -179,8 +217,8 @@ const AnimalDetailsPage = async ({ params }) => {
 
           {/* Right Column: Adoption Form Side Panel */}
           <div className="lg:col-span-1 lg:sticky lg:top-24">
+            {/* Case 1: User is the owner */}
             {isOwner ? (
-              // ✅ Show this instead of the form
               <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(74,44,23,0.06)] border-[1.5px] border-[#D4A574]/20 p-8 text-center">
                 <div className="w-16 h-16 bg-[#FFF8F0] rounded-full flex items-center justify-center mx-auto mb-4">
                   <FaLock className="text-[#E8742A] text-2xl" />
@@ -192,7 +230,54 @@ const AnimalDetailsPage = async ({ params }) => {
                   Pet owners are not allowed to submit adoption requests.
                 </p>
               </div>
+            ) : isAdopted ? (
+              /* Case 2: Pet is already adopted */
+              <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(74,44,23,0.06)] border-[1.5px] border-[#D4A574]/20 p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaCheckCircle className="text-green-500 text-2xl" />
+                </div>
+                <h3 className="text-xl font-bold text-[#4A2C17] mb-2">
+                  Already Adopted!
+                </h3>
+                <p className="text-[#6B3E26] font-medium">
+                  This pet has already found their forever home. Check out other
+                  pets looking for adoption!
+                </p>
+                <Link
+                  href="/all-pets"
+                  className="mt-6 inline-block bg-gradient-to-r from-[#E8742A] to-[#F5923E] text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 transition-opacity"
+                >
+                  Browse Other Pets
+                </Link>
+              </div>
+            ) : hasAlreadyApplied ? (
+              /* Case 3: User already submitted a request */
+              <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(74,44,23,0.06)] border-[1.5px] border-[#D4A574]/20 p-8 text-center">
+                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaClock className="text-yellow-500 text-2xl" />
+                </div>
+                <h3 className="text-xl font-bold text-[#4A2C17] mb-2">
+                  Request Submitted!
+                </h3>
+                <p className="text-[#6B3E26] font-medium">
+                  You've already submitted an adoption request for{" "}
+                  <span className="text-[#E8742A] font-bold">{petName}</span>.
+                  Please wait while we review your application.
+                </p>
+                <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                  <p className="text-yellow-700 text-sm font-medium">
+                    ⏳ Your request is under review. We'll notify you soon!
+                  </p>
+                </div>
+                <Link
+                  href="/all-pets"
+                  className="mt-6 inline-block bg-gradient-to-r from-[#E8742A] to-[#F5923E] text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 transition-opacity"
+                >
+                  Browse Other Pets
+                </Link>
+              </div>
             ) : (
+              /* Case 4: Show adoption form */
               <AdoptionForm petName={petName} petId={_id} />
             )}
           </div>
@@ -200,6 +285,6 @@ const AnimalDetailsPage = async ({ params }) => {
       </div>
     </div>
   );
-};;;
+};
 
 export default AnimalDetailsPage;

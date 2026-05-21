@@ -17,6 +17,7 @@ export default function MyListingsClient({ initialAnimals }) {
   // Requests Modal State
   const [isRequestsModalOpen, setIsRequestsModalOpen] = useState(false);
   const [selectedPetName, setSelectedPetName] = useState('');
+  const [selectedPetId, setSelectedPetId] = useState(null);
   
   // Delete Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -36,6 +37,7 @@ export default function MyListingsClient({ initialAnimals }) {
   // --- Requests Logic ---
   const openRequestsModal = async (animal) => {
     setSelectedPetName(animal.petName);
+    setSelectedPetId(animal._id); 
     setIsRequestsModalOpen(true);
     try {
       const res = await fetch(`http://localhost:5000/adoptions/pet/${animal._id}`);
@@ -54,27 +56,57 @@ export default function MyListingsClient({ initialAnimals }) {
   const closeRequestsModal = () => {
     setIsRequestsModalOpen(false);
     setSelectedPetName('');
+    setSelectedPetId(null); 
   };
 
-  const handleRequestAction = async (reqId, action) => {
-    try {
-      const res = await fetch(`http://localhost:5000/adoptions/${reqId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: action })
-      });
-      
-      if (res.ok) {
-        setRequests(prev => prev.filter(req => (req._id || req.id) !== reqId));
-        toast.success(`Request ${action} successfully!`);
-      } else {
-        toast.error(`Failed to ${action} request`);
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error(`Error processing request`);
-    }
-  };
+ const handleRequestAction = async (reqId, action, petId) => {
+   try {
+     const res = await fetch(`http://localhost:5000/adoptions/${reqId}`, {
+       method: "PUT",
+       headers: { "Content-Type": "application/json" },
+       body: JSON.stringify({ status: action }),
+     });
+
+     if (!res.ok) {
+       toast.error(`Failed to ${action} request`);
+       return;
+     }
+
+     if (action === "approved") {
+       // 1. Delete all OTHER requests for this pet
+       await fetch(`http://localhost:5000/adoptions/pet/${petId}`, {
+         method: "DELETE",
+       });
+
+       // 2. Mark pet as adopted
+       await fetch(`http://localhost:5000/animals/${petId}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ status: "adopted" }),
+       });
+
+       // 3. Update local animals state to reflect adopted status
+       setAnimals((prev) =>
+         prev.map((animal) =>
+           animal._id === petId ? { ...animal, status: "adopted" } : animal,
+         ),
+       );
+
+       // 4. Clear all requests from modal
+       setRequests([]);
+       toast.success("Request approved! Pet marked as adopted.");
+     } else {
+       // Just remove the rejected request from the list
+       setRequests((prev) =>
+         prev.filter((req) => (req._id || req.id) !== reqId),
+       );
+       toast.success("Request rejected.");
+     }
+   } catch (e) {
+     console.error(e);
+     toast.error("Error processing request");
+   }
+ };
 
   // --- Delete Logic ---
   const openDeleteModal = (animal) => {
@@ -85,6 +117,7 @@ export default function MyListingsClient({ initialAnimals }) {
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
     setSelectedPetForDelete(null);
+    
   };
 
   const confirmDelete = async () => {
@@ -186,7 +219,9 @@ export default function MyListingsClient({ initialAnimals }) {
             <FaListAlt />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#6B3E26] uppercase">Total Listings</p>
+            <p className="text-sm font-semibold text-[#6B3E26] uppercase">
+              Total Listings
+            </p>
             <p className="text-2xl font-bold text-[#4A2C17]">{totalListings}</p>
           </div>
         </div>
@@ -195,8 +230,12 @@ export default function MyListingsClient({ initialAnimals }) {
             <FaPaw />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#6B3E26] uppercase">Available</p>
-            <p className="text-2xl font-bold text-[#4A2C17]">{availableCount}</p>
+            <p className="text-sm font-semibold text-[#6B3E26] uppercase">
+              Available
+            </p>
+            <p className="text-2xl font-bold text-[#4A2C17]">
+              {availableCount}
+            </p>
           </div>
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-sm border-[1.5px] border-[#D4A574]/20 flex items-center gap-4">
@@ -204,7 +243,9 @@ export default function MyListingsClient({ initialAnimals }) {
             <FaCheckCircle />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#6B3E26] uppercase">Adopted</p>
+            <p className="text-sm font-semibold text-[#6B3E26] uppercase">
+              Adopted
+            </p>
             <p className="text-2xl font-bold text-[#4A2C17]">{adoptedCount}</p>
           </div>
         </div>
@@ -214,42 +255,50 @@ export default function MyListingsClient({ initialAnimals }) {
       {animals.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {animals.map((animal) => (
-            <div key={animal._id} className="bg-white rounded-2xl overflow-hidden shadow-sm border-[1.5px] border-[#D4A574]/30 hover:shadow-md transition-shadow flex flex-col">
+            <div
+              key={animal._id}
+              className="bg-white rounded-2xl overflow-hidden shadow-sm border-[1.5px] border-[#D4A574]/30 hover:shadow-md transition-shadow flex flex-col"
+            >
               <div className="relative h-48 w-full bg-[#F5E6D3]">
                 <Image
-                  src={animal.imageUrl || "https://via.placeholder.com/400x300.png?text=No+Image"}
+                  src={
+                    animal.imageUrl ||
+                    "https://via.placeholder.com/400x300.png?text=No+Image"
+                  }
                   alt={animal.petName || "Pet Image"}
                   fill
                   unoptimized
                   className="object-cover"
                 />
                 <div className="absolute top-3 right-3 bg-[#FFF8F0] text-[#E8742A] font-bold text-sm px-3 py-1 rounded-lg shadow-sm">
-                  {animal.adoptionFee > 0 ? `$${animal.adoptionFee}` : 'Free'}
+                  {animal.adoptionFee > 0 ? `$${animal.adoptionFee}` : "Free"}
                 </div>
               </div>
               <div className="p-5 flex-grow flex flex-col">
-                <h3 className="text-xl font-bold text-[#4A2C17] mb-4 truncate">{animal.petName}</h3>
-                
+                <h3 className="text-xl font-bold text-[#4A2C17] mb-4 truncate">
+                  {animal.petName}
+                </h3>
+
                 <div className="mt-auto grid grid-cols-2 gap-2">
-                  <button 
+                  <button
                     onClick={() => openRequestsModal(animal)}
                     className="flex items-center justify-center gap-2 bg-[#FFF8F0] text-[#E8742A] border border-[#E8742A]/30 hover:bg-[#E8742A] hover:text-white py-2 rounded-lg font-semibold text-sm transition-colors"
                   >
                     <FaInbox /> Requests
                   </button>
-                  <Link 
+                  <Link
                     href={`/all-pets/${animal._id}`}
                     className="flex items-center justify-center gap-2 bg-[#FFF8F0] text-[#6B3E26] border border-[#D4A574]/30 hover:bg-[#D4A574] hover:text-white py-2 rounded-lg font-semibold text-sm transition-colors"
                   >
                     <FaEye /> View
                   </Link>
-                  <button 
+                  <button
                     onClick={() => openEditModal(animal)}
                     className="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-600 hover:text-white py-2 rounded-lg font-semibold text-sm transition-colors cursor-pointer"
                   >
                     <FaEdit /> Edit
                   </button>
-                  <button 
+                  <button
                     onClick={() => openDeleteModal(animal)}
                     className="flex items-center justify-center gap-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white py-2 rounded-lg font-semibold text-sm transition-colors cursor-pointer"
                   >
@@ -261,8 +310,14 @@ export default function MyListingsClient({ initialAnimals }) {
           ))}
         </div>
       ) : (
-        <div className="paw-dashboard__stats" style={{ display: "block", marginTop: "32px" }}>
-          <div className="paw-dashboard__stat-card" style={{ maxWidth: "100%" }}>
+        <div
+          className="paw-dashboard__stats"
+          style={{ display: "block", marginTop: "32px" }}
+        >
+          <div
+            className="paw-dashboard__stat-card"
+            style={{ maxWidth: "100%" }}
+          >
             <div className="paw-dashboard__stat-icon">
               <FaListAlt />
             </div>
@@ -277,31 +332,31 @@ export default function MyListingsClient({ initialAnimals }) {
       )}
 
       {/* Extracted Modal Components */}
-      
-      <RequestsModal 
-        isOpen={isRequestsModalOpen} 
-        selectedPetName={selectedPetName} 
-        requests={requests} 
-        onClose={closeRequestsModal} 
-        onAction={handleRequestAction} 
+
+      <RequestsModal
+        isOpen={isRequestsModalOpen}
+        selectedPetName={selectedPetName}
+        requests={requests}
+        onClose={closeRequestsModal}
+        onAction={handleRequestAction}
+        selectedPetId={selectedPetId}
       />
 
-      <DeleteConfirmModal 
-        isOpen={isDeleteModalOpen} 
-        animal={selectedPetForDelete} 
-        onClose={closeDeleteModal} 
-        onConfirm={confirmDelete} 
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        animal={selectedPetForDelete}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
       />
 
-      <EditPetModal 
-        isOpen={isEditModalOpen} 
-        formData={editFormData} 
-        isSaving={isSaving} 
-        onClose={closeEditModal} 
-        onChange={handleEditChange} 
-        onSubmit={handleEditSubmit} 
+      <EditPetModal
+        isOpen={isEditModalOpen}
+        formData={editFormData}
+        isSaving={isSaving}
+        onClose={closeEditModal}
+        onChange={handleEditChange}
+        onSubmit={handleEditSubmit}
       />
-
     </div>
   );
 }
