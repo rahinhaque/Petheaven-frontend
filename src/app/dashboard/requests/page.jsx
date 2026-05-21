@@ -6,6 +6,7 @@ import { authClient } from '@/lib/auth-client';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import CancelRequestModal from '@/components/modal/CancelRequestModal';
+import Spinner from '@/components/shared/Spinner';
 
 export default function RequestsPage() {
   const { data: sessionData, isPending } = authClient.useSession();
@@ -90,7 +91,7 @@ export default function RequestsPage() {
 
       <div className="paw-dashboard__stats" style={{ display: 'block', marginTop: '32px' }}>
         {loading ? (
-          <p>Loading your requests...</p>
+          <Spinner size="md" text="Loading your requests..." />
         ) : requests.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {requests.map((req, index) => {

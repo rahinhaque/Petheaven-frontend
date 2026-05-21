@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPaw, FaHeart, FaCommentDots } from 'react-icons/fa';
 import { authClient } from '@/lib/auth-client';
+import Spinner from "@/components/shared/Spinner";
 
 export default function DashboardPage() {
   const { data, isPending, error } = authClient.useSession();
@@ -69,7 +70,9 @@ export default function DashboardPage() {
           </div>
           <div className="paw-dashboard__stat-info">
             <h4>Total Pets Listed</h4>
-            <p>{isPending || loadingPets ? "..." : petCount}</p>
+            <div className="h-8 flex items-center">
+              {isPending || loadingPets ? <Spinner size="sm" text="" /> : <p className="text-2xl font-bold">{petCount}</p>}
+            </div>
           </div>
         </div>
 

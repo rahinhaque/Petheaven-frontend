@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import MyListingsClient from './MyListingsClient';
 import { authClient } from '@/lib/auth-client';
+import Spinner from '@/components/shared/Spinner';
 
 export default function ListingsPage() {
   const { data, isPending } = authClient.useSession();
@@ -41,7 +42,7 @@ export default function ListingsPage() {
       <div className="paw-dashboard__content">
         <div className="paw-dashboard__welcome">
           <h1 className="paw-dashboard__welcome-title">My Listings</h1>
-          <p className="paw-dashboard__welcome-subtitle">Loading your listings...</p>
+          <Spinner text="Loading your listings..." />
         </div>
       </div>
     );
