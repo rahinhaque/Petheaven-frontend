@@ -47,16 +47,26 @@ export default function AdoptionForm({ petName, petId }) {
       pickupDate: formData.pickupDate,
       message: formData.message,
       status: 'pending',
+      requestDate: new Date().toISOString(),
     };
 
     try {
-      // Simulate API call
-      // In reality, this would be: await fetch('http://localhost:5000/adoptions', { ... })
-      await new Promise(resolve => setTimeout(resolve, 1200));
+      const response = await fetch('http://localhost:5000/adoptions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(adoptionRequest),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit adoption request');
+      }
 
       toast.success(`Adoption request submitted for ${petName}! We will contact you soon.`);
       setFormData({ pickupDate: '', message: '' });
     } catch (error) {
+      console.error(error);
       toast.error('Failed to submit adoption request. Please try again.');
     } finally {
       setLoading(false);

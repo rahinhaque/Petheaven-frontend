@@ -27,32 +27,28 @@ export default function MyListingsClient({ initialAnimals }) {
   const [editFormData, setEditFormData] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   
-  // Simulated requests for the demo
-  const [requests, setRequests] = useState([
-    {
-      id: 1,
-      userName: "John Doe",
-      email: "john@example.com",
-      pickupDate: "2026-06-01",
-      status: "pending"
-    },
-    {
-      id: 2,
-      userName: "Jane Smith",
-      email: "jane@smith.com",
-      pickupDate: "2026-06-03",
-      status: "pending"
-    }
-  ]);
+  const [requests, setRequests] = useState([]);
 
   const totalListings = animals.length;
   const availableCount = animals.filter(a => a.status !== 'adopted').length;
   const adoptedCount = animals.filter(a => a.status === 'adopted').length;
 
   // --- Requests Logic ---
-  const openRequestsModal = (petName) => {
-    setSelectedPetName(petName);
+  const openRequestsModal = async (animal) => {
+    setSelectedPetName(animal.petName);
     setIsRequestsModalOpen(true);
+    try {
+      const res = await fetch(`http://localhost:5000/adoptions/pet/${animal._id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setRequests(data);
+      } else {
+        setRequests([]);
+      }
+    } catch (e) {
+      console.error("Failed to fetch requests:", e);
+      setRequests([]);
+    }
   };
 
   const closeRequestsModal = () => {
@@ -60,9 +56,24 @@ export default function MyListingsClient({ initialAnimals }) {
     setSelectedPetName('');
   };
 
-  const handleRequestAction = (reqId, action) => {
-    setRequests(prev => prev.filter(req => req.id !== reqId));
-    toast.success(`Request ${action} successfully!`);
+  const handleRequestAction = async (reqId, action) => {
+    try {
+      const res = await fetch(`http://localhost:5000/adoptions/${reqId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: action })
+      });
+      
+      if (res.ok) {
+        setRequests(prev => prev.filter(req => (req._id || req.id) !== reqId));
+        toast.success(`Request ${action} successfully!`);
+      } else {
+        toast.error(`Failed to ${action} request`);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error(`Error processing request`);
+    }
   };
 
   // --- Delete Logic ---
@@ -221,7 +232,7 @@ export default function MyListingsClient({ initialAnimals }) {
                 
                 <div className="mt-auto grid grid-cols-2 gap-2">
                   <button 
-                    onClick={() => openRequestsModal(animal.petName)}
+                    onClick={() => openRequestsModal(animal)}
                     className="flex items-center justify-center gap-2 bg-[#FFF8F0] text-[#E8742A] border border-[#E8742A]/30 hover:bg-[#E8742A] hover:text-white py-2 rounded-lg font-semibold text-sm transition-colors"
                   >
                     <FaInbox /> Requests
