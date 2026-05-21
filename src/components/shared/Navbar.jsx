@@ -253,12 +253,14 @@ export default function Navbar() {
                     {/* User avatar - shows image if available, else initials */}
                     <span className="paw-navbar__avatar">
                       {user.image ? (
-                        <Image
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
                           src={user.image}
                           alt={user.name || "User"}
                           width={32}
                           height={32}
                           className="paw-navbar__avatar-img"
+                          referrerPolicy="no-referrer"
                         />
                       ) : (
                         <span className="paw-navbar__avatar-initials">
@@ -523,12 +525,14 @@ export default function Navbar() {
                   <>
                     <div className="paw-drawer__user-info">
                       {user.image && (
-                        <Image
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
                           src={user.image}
                           alt={user.name}
                           width={40}
                           height={40}
                           className="paw-drawer__avatar"
+                          referrerPolicy="no-referrer"
                         />
                       )}
                       <span className="paw-drawer__user-name">

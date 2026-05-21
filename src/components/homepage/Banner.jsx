@@ -294,41 +294,9 @@ const Banner = () => {
       </div>
 
       {/* ── Animations ── */}
-      <style jsx>{`
-        @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:wght@400;600;700&display=swap");
-
-        @keyframes float {
-          0% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-14px);
-          }
-          100% {
-            transform: translateY(0px);
-          }
-        }
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(32px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes pawBob {
-          from {
-            transform: translateY(0) rotate(var(--r, 0deg));
-          }
-          to {
-            transform: translateY(-8px) rotate(var(--r, 0deg));
-          }
-        }
-      `}</style>
     </section>
   );
 };
 
 export default Banner;
+

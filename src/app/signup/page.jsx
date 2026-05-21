@@ -97,8 +97,17 @@ export default function SignUpPage() {
     }
   };
 
-  const handleGoogle = () => {
-    toast.info('Google sign-up coming soon!');
+  const handleGoogle = async () => {
+    try {
+      console.log("🚀 Initiating Google sign-up...");
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+    } catch (err) {
+      console.error("❌ Google Sign-up Error:", err);
+      toast.error("Failed to sign up with Google. Please try again.");
+    }
   };
 
   return (
