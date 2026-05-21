@@ -1,8 +1,6 @@
-@import "tailwindcss";
-@import "@heroui/styles"; 
-
-/* ─── Banner Keyframe Animations ─── */
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:wght@400;600;700&display=swap");
+@import "tailwindcss";
+@import "@heroui/styles";
 
 @keyframes float {
   0%   { transform: translateY(0px); }

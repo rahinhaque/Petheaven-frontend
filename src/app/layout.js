@@ -1,4 +1,5 @@
 const dns = require("dns");
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 // Force Node.js to use Google and Cloudflare DNS servers for all lookups
 dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
@@ -42,7 +43,7 @@ export default function RootLayout({ children }) {
         <Toaster position="top-center" richColors />
         <Navbar />
         <div className="paw-navbar-spacer" />
-        {children}
+        <NuqsAdapter>{children}</NuqsAdapter>
         <Footer />
       </body>
     </html>
