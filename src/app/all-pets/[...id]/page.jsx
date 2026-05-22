@@ -278,7 +278,11 @@ const AnimalDetailsPage = async ({ params }) => {
               </div>
             ) : (
               /* Case 4: Show adoption form */
-              <AdoptionForm petName={petName} petId={_id} />
+              <AdoptionForm
+                petName={petName}
+                petId={_id}
+                initialHasApplied={hasAlreadyApplied}
+              />
             )}
           </div>
         </div>
