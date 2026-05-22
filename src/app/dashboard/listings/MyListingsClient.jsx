@@ -54,7 +54,7 @@ export default function MyListingsClient({ initialAnimals }) {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/adoptions/pet/${animal._id}`,
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/adoptions/pet/${animal._id}`,
         {
           headers: {
             authorization: `Bearer ${tokenData?.token}`,
@@ -85,14 +85,17 @@ export default function MyListingsClient({ initialAnimals }) {
     const {data: tokenData} = await authClient.token();
           console.log(tokenData);
     try {
-      const res = await fetch(`http://localhost:5000/adoptions/${reqId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${tokenData?.token}`,
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/adoptions/${reqId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${tokenData?.token}`,
+          },
+          body: JSON.stringify({ status: action }),
         },
-        body: JSON.stringify({ status: action }),
-      });
+      );
 
       if (!res.ok) {
         toast.error(`Failed to ${action} request`);
@@ -102,7 +105,7 @@ export default function MyListingsClient({ initialAnimals }) {
       if (action === "approved") {
         // Delete all OTHER requests for this pet (not the approved one)
         await fetch(
-          `http://localhost:5000/adoptions/pet/${petId}/others?excludeId=${reqId}`,
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/adoptions/pet/${petId}/others?excludeId=${reqId}`,
           {
             method: "DELETE",
             headers: {
@@ -113,9 +116,10 @@ export default function MyListingsClient({ initialAnimals }) {
         );
 
         // Mark pet as adopted
-        await fetch(`http://localhost:5000/animals/${petId}`, {
+        await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/animals/${petId}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" ,
+          headers: {
+            "Content-Type": "application/json",
             authorization: `Bearer ${tokenData?.token}`,
           },
           body: JSON.stringify({ status: "adopted" }),
@@ -166,12 +170,13 @@ export default function MyListingsClient({ initialAnimals }) {
     console.log(tokenData);
     try {
       const res = await fetch(
-        `http://localhost:5000/animals/${selectedPetForDelete._id}`,
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/animals/${selectedPetForDelete._id}`,
         {
           method: "DELETE",
-          headers: { "Content-Type": "application/json",
+          headers: {
+            "Content-Type": "application/json",
             authorization: `Bearer ${tokenData?.token}`,
-           },
+          },
         },
       );
 
@@ -214,10 +219,11 @@ export default function MyListingsClient({ initialAnimals }) {
     const { data: tokenData } = await authClient.token();
     console.log(tokenData);
     const res = await fetch(
-      `http://localhost:5000/animals/${editFormData._id}`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/animals/${editFormData._id}`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" ,
+        headers: {
+          "Content-Type": "application/json",
           authorization: `Bearer ${tokenData?.token}`,
         },
         body: JSON.stringify(animalData),

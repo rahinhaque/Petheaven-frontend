@@ -15,7 +15,7 @@ const AllPetsSection = async ({ searchParams }) => {
   if (resolvedParams?.species) params.set("species", resolvedParams.species);
 
   const queryString = params.toString();
-  const url = `http://localhost:5000/animals${queryString ? `?${queryString}` : ""}`;
+  const url = `${process.env.NEXT_PUBLIC_SERVER_URL}/animals${queryString ? `?${queryString}` : ""}`;
 
   let animals = [];
   try {

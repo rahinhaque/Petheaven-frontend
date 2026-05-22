@@ -63,9 +63,12 @@ const FeatureAnimal = async () => {
   let animals = [];
 
   try {
-    const res = await fetch("http://localhost:5000/animals?_limit=6", {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/animals?_limit=6`,
+      {
+        cache: "no-store",
+      },
+    );
     if (res.ok) {
       animals = await res.json();
     }

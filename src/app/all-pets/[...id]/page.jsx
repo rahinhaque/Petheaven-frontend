@@ -33,7 +33,7 @@ const AnimalDetailsPage = async ({ params }) => {
   // Fetch animal data
   let animalData = null;
   try {
-    const res = await fetch(`http://localhost:5000/animals/${id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/animals/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

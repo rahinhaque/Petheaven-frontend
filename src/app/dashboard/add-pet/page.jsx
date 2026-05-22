@@ -49,7 +49,7 @@ export default function AddPetPage() {
      console.log(tokenData);
 
     try {
-      const res = await fetch("http://localhost:5000/animals", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/animals`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

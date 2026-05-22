@@ -20,9 +20,12 @@ export default function ListingsPage() {
 
     const fetchAnimals = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/animals/user/${user.email}`, {
-          cache: 'no-store'
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/animals/user/${user.email}`,
+          {
+            cache: "no-store",
+          },
+        );
         if (res.ok) {
           const fetchedAnimals = await res.json();
           setAnimals(fetchedAnimals);

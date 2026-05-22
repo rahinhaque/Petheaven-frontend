@@ -34,7 +34,7 @@ export default function RequestsPage() {
 
       try {
         const res = await fetch(
-          `http://localhost:5000/adoptions/user/${user.email}`,
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/adoptions/user/${user.email}`,
           {
             headers: {
               authorization: `Bearer ${tokenData?.token}`,
@@ -69,13 +69,16 @@ export default function RequestsPage() {
     console.log(tokenData);
 
     try {
-      const res = await fetch(`http://localhost:5000/adoptions/${reqId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          authorization: `Bearer ${tokenData?.token}`,
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/adoptions/${reqId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${tokenData?.token}`,
+          },
         },
-      });
+      );
 
       if (res.ok) {
         setRequests((prev) => prev.filter((req) => (req._id || req.id) !== reqId));

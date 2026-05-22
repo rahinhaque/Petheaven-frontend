@@ -33,7 +33,9 @@ export default function DashboardPage() {
 
     const fetchPetCount = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/animals/user/${user.email}`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/animals/user/${user.email}`,
+        );
         if (res.ok) {
           const fetchedAnimals = await res.json();
           setPetCount(fetchedAnimals.length || 0);

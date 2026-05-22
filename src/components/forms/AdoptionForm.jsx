@@ -56,13 +56,17 @@ export default function AdoptionForm({
     console.log(tokenData);
 
     try {
-      const response = await fetch("http://localhost:5000/adoptions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" ,
-          authorization: `Bearer ${tokenData?.token}`,
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/adoptions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${tokenData?.token}`,
+          },
+          body: JSON.stringify(adoptionRequest),
         },
-        body: JSON.stringify(adoptionRequest),
-      });
+      );
 
       if (!response.ok) throw new Error("Failed to submit adoption request");
 
