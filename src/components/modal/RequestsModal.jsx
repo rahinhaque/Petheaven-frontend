@@ -1,5 +1,5 @@
-import React from 'react';
-import { FaTimes, FaInbox } from 'react-icons/fa';
+import React from "react";
+import { FaTimes, FaInbox, FaCheckCircle } from "react-icons/fa";
 
 export default function RequestsModal({
   isOpen,
@@ -14,6 +14,7 @@ export default function RequestsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-[#D4A574]/30 animate-in fade-in zoom-in duration-200">
+        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#D4A574]/20 bg-[#FFF8F0]">
           <h2 className="text-2xl font-bold text-[#4A2C17]">
             Adoption Requests{" "}
@@ -26,46 +27,77 @@ export default function RequestsModal({
             <FaTimes size={18} />
           </button>
         </div>
+
+        {/* Body */}
         <div className="p-6 max-h-[60vh] overflow-y-auto bg-white">
           {requests.length > 0 ? (
             <div className="flex flex-col gap-4">
-              {requests.map((req) => (
-                <div
-                  key={req._id || req.id}
-                  className="border border-[#D4A574]/30 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#F5E6D3]/20"
-                >
-                  <div>
-                    <p className="font-bold text-[#4A2C17] text-lg">
-                      {req.userName}
-                    </p>
-                    <p className="text-[#6B3E26] text-sm mb-1">
-                      {req.userEmail || req.email}
-                    </p>
-                    <p className="text-sm font-semibold text-[#8B5E3C]">
-                      Pickup:{" "}
-                      <span className="text-[#4A2C17]">{req.pickupDate}</span>
-                    </p>
+              {requests.map((req) => {
+                const isApproved = req.status === "approved";
+                return (
+                  <div
+                    key={req._id || req.id}
+                    className={`border rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
+                      isApproved
+                        ? "border-green-300 bg-green-50"
+                        : "border-[#D4A574]/30 bg-[#F5E6D3]/20"
+                    }`}
+                  >
+                    {/* Requester Info */}
+                    <div>
+                      <p className="font-bold text-[#4A2C17] text-lg">
+                        {req.userName}
+                      </p>
+                      <p className="text-[#6B3E26] text-sm mb-1">
+                        {req.userEmail || req.email}
+                      </p>
+                      <p className="text-sm font-semibold text-[#8B5E3C]">
+                        Pickup:{" "}
+                        <span className="text-[#4A2C17]">{req.pickupDate}</span>
+                      </p>
+                      {req.message && (
+                        <p className="text-sm text-[#6B3E26] mt-1 italic">
+                          "{req.message}"
+                        </p>
+                      )}
+                    </div>
+
+                    {/* ✅ Approved badge OR action buttons */}
+                    {isApproved ? (
+                      <div className="flex items-center gap-2 bg-green-100 text-green-700 font-bold px-4 py-2 rounded-lg text-sm border border-green-200 shrink-0">
+                        <FaCheckCircle /> Approved
+                      </div>
+                    ) : (
+                      <div className="flex gap-3 shrink-0">
+                        <button
+                          onClick={() =>
+                            onAction(
+                              req._id || req.id,
+                              "approved",
+                              selectedPetId,
+                            )
+                          }
+                          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg text-sm shadow-sm transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() =>
+                            onAction(
+                              req._id || req.id,
+                              "rejected",
+                              selectedPetId,
+                            )
+                          }
+                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg text-sm shadow-sm transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() =>
-                        onAction(req._id || req.id, "approved", selectedPetId)
-                      }
-                      className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg text-sm shadow-sm transition-colors"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() =>
-                        onAction(req._id || req.id, "rejected", selectedPetId)
-                      }
-                      className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg text-sm shadow-sm transition-colors"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-10">

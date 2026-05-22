@@ -1,24 +1,32 @@
 "use client";
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { toast } from 'sonner';
-import { FaListAlt, FaCheckCircle, FaPaw, FaEye, FaEdit, FaTrash, FaInbox } from 'react-icons/fa';
-import '../DashboardForm.css';
+import React, { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { toast } from "sonner";
+import {
+  FaListAlt,
+  FaCheckCircle,
+  FaPaw,
+  FaEye,
+  FaEdit,
+  FaTrash,
+  FaInbox,
+} from "react-icons/fa";
+import "../DashboardForm.css";
 
-import EditPetModal from '@/components/modal/EditPetModal';
-import DeleteConfirmModal from '@/components/modal/DeleteConfirmModal';
-import RequestsModal from '@/components/modal/RequestsModal';
+import EditPetModal from "@/components/modal/EditPetModal";
+import DeleteConfirmModal from "@/components/modal/DeleteConfirmModal";
+import RequestsModal from "@/components/modal/RequestsModal";
 
 export default function MyListingsClient({ initialAnimals }) {
   const [animals, setAnimals] = useState(initialAnimals || []);
-  
+
   // Requests Modal State
   const [isRequestsModalOpen, setIsRequestsModalOpen] = useState(false);
-  const [selectedPetName, setSelectedPetName] = useState('');
+  const [selectedPetName, setSelectedPetName] = useState("");
   const [selectedPetId, setSelectedPetId] = useState(null);
-  
+
   // Delete Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedPetForDelete, setSelectedPetForDelete] = useState(null);
@@ -27,20 +35,22 @@ export default function MyListingsClient({ initialAnimals }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const [requests, setRequests] = useState([]);
 
   const totalListings = animals.length;
-  const availableCount = animals.filter(a => a.status !== 'adopted').length;
-  const adoptedCount = animals.filter(a => a.status === 'adopted').length;
+  const availableCount = animals.filter((a) => a.status !== "adopted").length;
+  const adoptedCount = animals.filter((a) => a.status === "adopted").length;
 
   // --- Requests Logic ---
   const openRequestsModal = async (animal) => {
     setSelectedPetName(animal.petName);
-    setSelectedPetId(animal._id); 
+    setSelectedPetId(animal._id);
     setIsRequestsModalOpen(true);
     try {
-      const res = await fetch(`http://localhost:5000/adoptions/pet/${animal._id}`);
+      const res = await fetch(
+        `http://localhost:5000/adoptions/pet/${animal._id}`,
+      );
       if (res.ok) {
         const data = await res.json();
         setRequests(data);
@@ -55,58 +65,66 @@ export default function MyListingsClient({ initialAnimals }) {
 
   const closeRequestsModal = () => {
     setIsRequestsModalOpen(false);
-    setSelectedPetName('');
-    setSelectedPetId(null); 
+    setSelectedPetName("");
+    setSelectedPetId(null);
   };
 
- const handleRequestAction = async (reqId, action, petId) => {
-   try {
-     const res = await fetch(`http://localhost:5000/adoptions/${reqId}`, {
-       method: "PUT",
-       headers: { "Content-Type": "application/json" },
-       body: JSON.stringify({ status: action }),
-     });
+  const handleRequestAction = async (reqId, action, petId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/adoptions/${reqId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: action }),
+      });
 
-     if (!res.ok) {
-       toast.error(`Failed to ${action} request`);
-       return;
-     }
+      if (!res.ok) {
+        toast.error(`Failed to ${action} request`);
+        return;
+      }
 
-     if (action === "approved") {
-       // 1. Delete all OTHER requests for this pet
-       await fetch(`http://localhost:5000/adoptions/pet/${petId}`, {
-         method: "DELETE",
-       });
+      if (action === "approved") {
+        // Delete all OTHER requests for this pet (not the approved one)
+        await fetch(
+          `http://localhost:5000/adoptions/pet/${petId}/others?excludeId=${reqId}`,
+          {
+            method: "DELETE",
+          },
+        );
 
-       // 2. Mark pet as adopted
-       await fetch(`http://localhost:5000/animals/${petId}`, {
-         method: "PATCH",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ status: "adopted" }),
-       });
+        // Mark pet as adopted
+        await fetch(`http://localhost:5000/animals/${petId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "adopted" }),
+        });
 
-       // 3. Update local animals state to reflect adopted status
-       setAnimals((prev) =>
-         prev.map((animal) =>
-           animal._id === petId ? { ...animal, status: "adopted" } : animal,
-         ),
-       );
+        // Update local animals state to reflect adopted status
+        setAnimals((prev) =>
+          prev.map((animal) =>
+            animal._id === petId ? { ...animal, status: "adopted" } : animal,
+          ),
+        );
 
-       // 4. Clear all requests from modal
-       setRequests([]);
-       toast.success("Request approved! Pet marked as adopted.");
-     } else {
-       // Just remove the rejected request from the list
-       setRequests((prev) =>
-         prev.filter((req) => (req._id || req.id) !== reqId),
-       );
-       toast.success("Request rejected.");
-     }
-   } catch (e) {
-     console.error(e);
-     toast.error("Error processing request");
-   }
- };
+        // ✅ Keep only the approved request in modal with updated status
+        setRequests((prev) =>
+          prev
+            .filter((req) => (req._id || req.id) === reqId)
+            .map((req) => ({ ...req, status: "approved" })),
+        );
+
+        toast.success("Request approved! Pet marked as adopted.");
+      } else {
+        // Remove only the rejected request from the list
+        setRequests((prev) =>
+          prev.filter((req) => (req._id || req.id) !== reqId),
+        );
+        toast.success("Request rejected.");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Error processing request");
+    }
+  };
 
   // --- Delete Logic ---
   const openDeleteModal = (animal) => {
@@ -117,7 +135,6 @@ export default function MyListingsClient({ initialAnimals }) {
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
     setSelectedPetForDelete(null);
-    
   };
 
   const confirmDelete = async () => {
@@ -127,19 +144,18 @@ export default function MyListingsClient({ initialAnimals }) {
         `http://localhost:5000/animals/${selectedPetForDelete._id}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+          headers: { "Content-Type": "application/json" },
+        },
       );
 
-      if (!res.ok) {
-        throw new Error("Server responded with an error.");
-      }
+      if (!res.ok) throw new Error("Server responded with an error.");
 
-      // Remove from local state
-      setAnimals(prev => prev.filter(animal => animal._id !== selectedPetForDelete._id));
-      toast.success(`${selectedPetForDelete.petName} has been deleted from your listings.`);
+      setAnimals((prev) =>
+        prev.filter((animal) => animal._id !== selectedPetForDelete._id),
+      );
+      toast.success(
+        `${selectedPetForDelete.petName} has been deleted from your listings.`,
+      );
       closeDeleteModal();
     } catch (error) {
       console.error("Error deleting pet:", error);
@@ -161,40 +177,41 @@ export default function MyListingsClient({ initialAnimals }) {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     const formElementData = new FormData(e.currentTarget);
     const animalData = Object.fromEntries(formElementData.entries());
-    console.log("Form Data from Edit Modal:", animalData);
 
-    const res = await fetch(`http://localhost:5000/animals/${editFormData._id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `http://localhost:5000/animals/${editFormData._id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(animalData),
       },
-      body: JSON.stringify(animalData)
-    });
-    
+    );
+
     const updatedAnimal = await res.json();
-    console.log("Response from server:", updatedAnimal);  
-    
+    console.log("Response from server:", updatedAnimal);
+
     setIsSaving(true);
     try {
-      // Simulate API PUT request
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local state
-      setAnimals(prev => prev.map(animal => 
-        animal._id === editFormData._id ? { ...editFormData, ...animalData } : animal
-      ));
-      
-      toast.success(`${animalData.petName}'s details have been successfully updated!`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      setAnimals((prev) =>
+        prev.map((animal) =>
+          animal._id === editFormData._id
+            ? { ...editFormData, ...animalData }
+            : animal,
+        ),
+      );
+
+      toast.success(
+        `${animalData.petName}'s details have been successfully updated!`,
+      );
       closeEditModal();
     } catch (error) {
       toast.error("Failed to update pet details.");
@@ -273,12 +290,17 @@ export default function MyListingsClient({ initialAnimals }) {
                 <div className="absolute top-3 right-3 bg-[#FFF8F0] text-[#E8742A] font-bold text-sm px-3 py-1 rounded-lg shadow-sm">
                   {animal.adoptionFee > 0 ? `$${animal.adoptionFee}` : "Free"}
                 </div>
+                {/* ✅ Adopted ribbon on card */}
+                {animal.status === "adopted" && (
+                  <div className="absolute top-3 left-3 bg-green-500/90 text-white font-bold text-xs px-3 py-1 rounded-lg shadow-sm flex items-center gap-1">
+                    <FaCheckCircle /> Adopted
+                  </div>
+                )}
               </div>
               <div className="p-5 flex-grow flex flex-col">
                 <h3 className="text-xl font-bold text-[#4A2C17] mb-4 truncate">
                   {animal.petName}
                 </h3>
-
                 <div className="mt-auto grid grid-cols-2 gap-2">
                   <button
                     onClick={() => openRequestsModal(animal)}
@@ -330,8 +352,6 @@ export default function MyListingsClient({ initialAnimals }) {
           </div>
         </div>
       )}
-
-      {/* Extracted Modal Components */}
 
       <RequestsModal
         isOpen={isRequestsModalOpen}
