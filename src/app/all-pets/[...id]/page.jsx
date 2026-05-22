@@ -18,6 +18,11 @@ import { headers } from "next/headers";
 
 const AnimalDetailsPage = async ({ params }) => {
   const { id } = await params;
+  console.log("Animal ID:", id);
+  const tokenData = await auth.api.getToken({
+    headers: await headers(),
+  });
+  const token = tokenData?.token;
 
   // Get session server-side
   const session = await auth.api.getSession({
@@ -29,6 +34,9 @@ const AnimalDetailsPage = async ({ params }) => {
   let animalData = null;
   try {
     const res = await fetch(`http://localhost:5000/animals/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
       cache: "no-store",
     });
     if (res.ok) {

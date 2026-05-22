@@ -182,7 +182,7 @@ const Banner = () => {
           {/* CTA Buttons */}
           <div className="mt-9 flex flex-wrap gap-4 justify-center lg:justify-start">
             <Link
-              href="/pets"
+              href="/all-pets"
               className="group relative px-8 py-3.5 rounded-full font-bold text-white overflow-hidden shadow-lg hover:shadow-orange-300/50 transition-all duration-300 hover:-translate-y-0.5"
               style={{
                 background:
@@ -199,7 +199,7 @@ const Banner = () => {
             </Link>
 
             <Link
-              href="/pets"
+              href="/all-pets"
               className="px-8 py-3.5 rounded-full font-bold border-2 border-[#D4A574] text-[#4A2C17] hover:border-[#E8742A] hover:text-[#E8742A] hover:bg-orange-50 transition-all duration-300 hover:-translate-y-0.5"
               style={{
                 fontFamily: "'Lora', Georgia, serif",

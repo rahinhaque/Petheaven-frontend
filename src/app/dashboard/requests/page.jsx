@@ -28,10 +28,20 @@ export default function RequestsPage() {
         return;
       }
 
+
+      const {data: tokenData} = await authClient.token();
+      console.log(tokenData);
+
       try {
-        const res = await fetch(`http://localhost:5000/adoptions/user/${user.email}`, {
-          cache: 'no-store'
-        });
+        const res = await fetch(
+          `http://localhost:5000/adoptions/user/${user.email}`,
+          {
+            headers: {
+              authorization: `Bearer ${tokenData?.token}`,
+            },
+            cache: "no-store",
+          },
+        );
         if (res.ok) {
           const fetchedRequests = await res.json();
           setRequests(fetchedRequests);
@@ -55,9 +65,16 @@ export default function RequestsPage() {
     if (!requestToCancel) return;
     const reqId = requestToCancel._id || requestToCancel.id;
 
+    const { data: tokenData } = await authClient.token();
+    console.log(tokenData);
+
     try {
       const res = await fetch(`http://localhost:5000/adoptions/${reqId}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          authorization: `Bearer ${tokenData?.token}`,
+        },
       });
 
       if (res.ok) {

@@ -18,6 +18,7 @@ import "../DashboardForm.css";
 import EditPetModal from "@/components/modal/EditPetModal";
 import DeleteConfirmModal from "@/components/modal/DeleteConfirmModal";
 import RequestsModal from "@/components/modal/RequestsModal";
+import { authClient } from "@/lib/auth-client";
 
 export default function MyListingsClient({ initialAnimals }) {
   const [animals, setAnimals] = useState(initialAnimals || []);
@@ -47,9 +48,19 @@ export default function MyListingsClient({ initialAnimals }) {
     setSelectedPetName(animal.petName);
     setSelectedPetId(animal._id);
     setIsRequestsModalOpen(true);
+
+    const {data: tokenData} = await authClient.token();
+    console.log(tokenData);
+
     try {
       const res = await fetch(
         `http://localhost:5000/adoptions/pet/${animal._id}`,
+        {
+          headers: {
+            authorization: `Bearer ${tokenData?.token}`,
+          },
+          cache: "no-store",
+        },
       );
       if (res.ok) {
         const data = await res.json();
@@ -70,10 +81,16 @@ export default function MyListingsClient({ initialAnimals }) {
   };
 
   const handleRequestAction = async (reqId, action, petId) => {
+
+    const {data: tokenData} = await authClient.token();
+          console.log(tokenData);
     try {
       const res = await fetch(`http://localhost:5000/adoptions/${reqId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${tokenData?.token}`,
+        },
         body: JSON.stringify({ status: action }),
       });
 
@@ -88,13 +105,19 @@ export default function MyListingsClient({ initialAnimals }) {
           `http://localhost:5000/adoptions/pet/${petId}/others?excludeId=${reqId}`,
           {
             method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              authorization: `Bearer ${tokenData?.token}`,
+            },
           },
         );
 
         // Mark pet as adopted
         await fetch(`http://localhost:5000/animals/${petId}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json" ,
+            authorization: `Bearer ${tokenData?.token}`,
+          },
           body: JSON.stringify({ status: "adopted" }),
         });
 
@@ -139,12 +162,16 @@ export default function MyListingsClient({ initialAnimals }) {
 
   const confirmDelete = async () => {
     if (!selectedPetForDelete) return;
+    const { data: tokenData } = await authClient.token();
+    console.log(tokenData);
     try {
       const res = await fetch(
         `http://localhost:5000/animals/${selectedPetForDelete._id}`,
         {
           method: "DELETE",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json",
+            authorization: `Bearer ${tokenData?.token}`,
+           },
         },
       );
 
@@ -184,12 +211,15 @@ export default function MyListingsClient({ initialAnimals }) {
     e.preventDefault();
     const formElementData = new FormData(e.currentTarget);
     const animalData = Object.fromEntries(formElementData.entries());
-
+    const { data: tokenData } = await authClient.token();
+    console.log(tokenData);
     const res = await fetch(
       `http://localhost:5000/animals/${editFormData._id}`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,
+          authorization: `Bearer ${tokenData?.token}`,
+        },
         body: JSON.stringify(animalData),
       },
     );

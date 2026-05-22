@@ -6,6 +6,7 @@ import { setDefaultAutoSelectFamily } from "net";
 setDefaultAutoSelectFamily(false); // Node 18.13+ / 20+
 
 import { betterAuth } from "better-auth";
+import { jwt } from "better-auth/plugins";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 
@@ -33,4 +34,15 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: "paw_heaven",
   },
+  session: {
+    cookieCache: {
+      enabled: true,
+      strategy: "jwt",
+      // ✅ Max 7 days
+      maxAge: 7 * 24 * 60 * 60,
+    }
+  },
+  plugins: [
+    jwt(),
+  ]
 });

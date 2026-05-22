@@ -52,10 +52,15 @@ export default function AdoptionForm({
       requestDate: new Date().toISOString(),
     };
 
+    const {data: tokenData} = await authClient.token();
+    console.log(tokenData);
+
     try {
       const response = await fetch("http://localhost:5000/adoptions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,
+          authorization: `Bearer ${tokenData?.token}`,
+        },
         body: JSON.stringify(adoptionRequest),
       });
 

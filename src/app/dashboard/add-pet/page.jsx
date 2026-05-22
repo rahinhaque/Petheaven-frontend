@@ -45,13 +45,17 @@ export default function AddPetPage() {
     console.log(animalData);
     setLoading(true);
 
+     const {data: tokenData} = await authClient.token();
+     console.log(tokenData);
+
     try {
       const res = await fetch("http://localhost:5000/animals", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization: `Bearer ${tokenData?.token}`,
         },
-        body: JSON.stringify(animalData)
+        body: JSON.stringify(animalData),
       });
       
       const newAnimal = await res.json();
