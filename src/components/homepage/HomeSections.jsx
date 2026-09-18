@@ -1,5 +1,6 @@
 'use client'
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 /* ─────────────────────────────────────────────
    HOOK – lightweight intersection observer
@@ -326,9 +327,9 @@ const PetCareTips = () => {
               <div className="text-5xl mb-3">🐾</div>
               <div style={{ fontFamily: "'Playfair Display', serif", color: "#2E1503" }} className="font-bold text-lg mb-1">Need personalised advice?</div>
               <p style={{ fontFamily: "'Lora', serif" }} className="text-[#6B3E26] text-sm leading-relaxed">Our team of pet care specialists is always ready to guide new adopters through the journey.</p>
-              <button className="mt-4 px-5 py-2 rounded-full text-sm font-semibold text-white transition-all hover:shadow-lg hover:-translate-y-0.5" style={{ background: "linear-gradient(135deg, #E8742A, #F5923E)", fontFamily: "'Lora', serif" }}>
-                Talk to a Specialist →
-              </button>
+              <Link href="/specialist" className="mt-7 inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full text-sm font-semibold text-white shadow-lg shadow-orange-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-95" style={{ background: "linear-gradient(135deg, #E8742A, #F5923E)", fontFamily: "'Lora', serif" }}>
+                  Talk to a Specialist <span className="text-base leading-none">→</span>
+                </Link>
             </div>
           </div>
 
