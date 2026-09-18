@@ -446,9 +446,9 @@ const GetInvolved = () => {
   const { ref, inView } = useInView();
   
   const ways = [
-    { title: "Volunteer", desc: "Spend time walking dogs, cuddling cats, or helping at our events. Your time is their treasure.", action: "Join the Team" },
-    { title: "Foster", desc: "Open your home temporarily to an animal in need. It frees up shelter space and saves a life.", action: "Become a Foster" },
-    { title: "Donate", desc: "Every dollar provides food, medical care, and toys for our rescues. No contribution is too small.", action: "Make a Gift" }
+    { title: "Volunteer", desc: "Spend time walking dogs, cuddling cats, or helping at our events. Your time is their treasure.", action: "Join the Team", href: "/supportOurMissionFeature" },
+    { title: "Foster", desc: "Open your home temporarily to an animal in need. It frees up shelter space and saves a life.", action: "Become a Foster", href: "/supportOurMissionFeature" },
+    { title: "Donate", desc: "Every dollar provides food, medical care, and toys for our rescues. No contribution is too small.", action: "Make a Gift", href: "/supportOurMissionFeature" }
   ];
 
   return (
@@ -481,9 +481,9 @@ const GetInvolved = () => {
             >
               <h3 style={{ fontFamily: "'Playfair Display', serif", color: "#F5923E" }} className="font-bold text-2xl mb-4">{w.title}</h3>
               <p style={{ fontFamily: "'Lora', serif" }} className="text-[#D4A574] text-sm leading-relaxed mb-8">{w.desc}</p>
-              <button className="px-6 py-2.5 rounded-full text-sm font-semibold text-white/90 border border-white/20 group-hover:bg-[#E8742A] group-hover:border-[#E8742A] group-hover:text-white transition-all duration-300" style={{ fontFamily: "'Lora', serif" }}>
-                {w.action}
-              </button>
+              <Link href={w.href} className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white/90 border border-white/20 group-hover:bg-[#E8742A] group-hover:border-[#E8742A] group-hover:text-white group-hover:shadow-lg group-hover:shadow-orange-900/40 transition-all duration-300" style={{ fontFamily: "'Lora', serif" }}>
+                {w.action} <span>→</span>
+              </Link>
             </div>
           ))}
         </div>
